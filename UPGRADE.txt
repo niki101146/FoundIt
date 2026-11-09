@@ -1,9 +1,0 @@
-1. Copy backend\items\*  over your backend\items\ folder (replace files).
-2. Copy frontend\src\*   over your frontend\src\  folder (replace files).
-3. In frontend\index.html replace the font <link> with:
-   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-4. In backend run:
-   py manage.py makemigrations items
-   py manage.py migrate
-   py manage.py runserver
-5. Refresh http://localhost:5173
