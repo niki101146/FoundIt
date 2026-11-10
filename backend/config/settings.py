@@ -19,6 +19,10 @@ def env_list(name, default=""):
     ]
 
 
+# --------------------------------------------------
+# BASIC SETTINGS
+# --------------------------------------------------
+
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -36,10 +40,18 @@ ALLOWED_HOSTS = env_list(
     "localhost,127.0.0.1"
 )
 
-# Cloudinary
+
+# --------------------------------------------------
+# CLOUDINARY
+# --------------------------------------------------
+
 USE_CLOUDINARY = bool(os.getenv("CLOUDINARY_URL"))
 
-# Installed applications
+
+# --------------------------------------------------
+# INSTALLED APPLICATIONS
+# --------------------------------------------------
+
 INSTALLED_APPS = (
     (["cloudinary_storage"] if USE_CLOUDINARY else [])
     + [
@@ -59,7 +71,11 @@ INSTALLED_APPS = (
     ]
 )
 
-# Middleware
+
+# --------------------------------------------------
+# MIDDLEWARE
+# --------------------------------------------------
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -70,6 +86,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
+
+
+# --------------------------------------------------
+# URL AND TEMPLATE SETTINGS
+# --------------------------------------------------
 
 ROOT_URLCONF = "config.urls"
 
@@ -90,6 +111,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+
 # --------------------------------------------------
 # DATABASE
 # --------------------------------------------------
@@ -101,6 +123,7 @@ if os.environ.get("DATABASE_URL"):
         "default": dj_database_url.parse(
             os.environ["DATABASE_URL"],
             conn_max_age=600,
+            ssl_require=not DEBUG,
         )
     }
 
@@ -123,6 +146,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 
 # --------------------------------------------------
 # STATIC AND MEDIA FILES
@@ -147,12 +171,13 @@ STORAGES = {
     },
 }
 
-# Compatibility for django-cloudinary-storage
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedStaticFilesStorage"
-)
+
+# --------------------------------------------------
+# DEFAULT PRIMARY KEY
+# --------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 # --------------------------------------------------
 # SECURITY
@@ -170,6 +195,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS"
 )
 
+
 # --------------------------------------------------
 # CORS
 # --------------------------------------------------
@@ -178,6 +204,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ] + env_list("CORS_EXTRA_ORIGINS")
+
 
 # --------------------------------------------------
 # DJANGO REST FRAMEWORK
