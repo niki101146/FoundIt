@@ -143,13 +143,14 @@ STORAGES = {
         ),
     },
     "staticfiles": {
-        # Avoid manifest rewriting that is failing on Django Admin CSS.
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# Do not define STATICFILES_STORAGE separately.
-# Django 5.2 uses STORAGES for this configuration.
+# Compatibility for django-cloudinary-storage
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedStaticFilesStorage"
+)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
