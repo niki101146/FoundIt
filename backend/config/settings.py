@@ -52,24 +52,27 @@ USE_CLOUDINARY = bool(os.getenv("CLOUDINARY_URL"))
 # INSTALLED APPLICATIONS
 # --------------------------------------------------
 
-INSTALLED_APPS = (
-    (["cloudinary_storage"] if USE_CLOUDINARY else [])
-    + [
-        "django.contrib.admin",
-        "django.contrib.auth",
-        "django.contrib.contenttypes",
-        "django.contrib.sessions",
-        "django.contrib.messages",
-        "django.contrib.staticfiles",
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+]
+
+if USE_CLOUDINARY:
+    INSTALLED_APPS += [
+        "cloudinary_storage",
+        "cloudinary",
     ]
-    + (["cloudinary"] if USE_CLOUDINARY else [])
-    + [
-        "rest_framework",
-        "rest_framework.authtoken",
-        "corsheaders",
-        "items",
-    ]
-)
+
+INSTALLED_APPS += [
+    "rest_framework",
+    "rest_framework.authtoken",
+    "corsheaders",
+    "items",
+]
 
 
 # --------------------------------------------------
