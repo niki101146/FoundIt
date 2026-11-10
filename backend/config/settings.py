@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 
@@ -6,29 +7,39 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Local development: read backend/.env. On Render, use the Environment tab instead.
+# Environment variables
 load_dotenv(BASE_DIR / ".env")
 
 
 def env_list(name, default=""):
-    return [v.strip() for v in os.getenv(name, default).split(",") if v.strip()]
+    return [
+        value.strip()
+        for value in os.getenv(name, default).split(",")
+        if value.strip()
+    ]
 
 
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "dev-only-insecure-key"
     else:
-        raise ImproperlyConfigured("Set the SECRET_KEY environment variable.")
+        raise ImproperlyConfigured(
+            "Set the SECRET_KEY environment variable."
+        )
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+)
 
-# Optional: Cloudinary keeps uploaded photos permanently (Render's disk is wiped on every deploy).
-# Turned on automatically when the CLOUDINARY_URL environment variable is set.
+# Cloudinary
 USE_CLOUDINARY = bool(os.getenv("CLOUDINARY_URL"))
 
+# Installed applications
 INSTALLED_APPS = (
     (["cloudinary_storage"] if USE_CLOUDINARY else [])
     + [
@@ -48,6 +59,7 @@ INSTALLED_APPS = (
     ]
 )
 
+# Middleware
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -61,32 +73,37 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "config.urls"
 
-TEMPLATES = [{
-    "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [],
-    "APP_DIRS": True,
-    "OPTIONS": {
-        "context_processors": [
-            "django.template.context_processors.request",
-            "django.contrib.auth.context_processors.auth",
-            "django.contrib.messages.context_processors.messages",
-        ],
-    },
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    }
+]
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# ---------------------------------------------------------------------------
-# Database
-# 1) DATABASE_URL  -> Render PostgreSQL
-# 2) DB_PASSWORD   -> local PostgreSQL using the DB_* variables
-# 3) otherwise     -> SQLite fallback, so DATABASES is always defined
-# ---------------------------------------------------------------------------
+# --------------------------------------------------
+# DATABASE
+# --------------------------------------------------
+
 if os.environ.get("DATABASE_URL"):
     import dj_database_url
+
     DATABASES = {
-        "default": dj_database_url.parse(os.environ["DATABASE_URL"], conn_max_age=600)
+        "default": dj_database_url.parse(
+            os.environ["DATABASE_URL"],
+            conn_max_age=600,
+        )
     }
+
 elif os.environ.get("DB_PASSWORD"):
     DATABASES = {
         "default": {
@@ -98,6 +115,7 @@ elif os.environ.get("DB_PASSWORD"):
             "PORT": os.environ.get("DB_PORT", "5432"),
         }
     }
+
 else:
     DATABASES = {
         "default": {
@@ -106,11 +124,13 @@ else:
         }
     }
 
-# ---------------------------------------------------------------------------
-# Static + media files
-# ---------------------------------------------------------------------------
+# --------------------------------------------------
+# STATIC AND MEDIA FILES
+# --------------------------------------------------
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -120,32 +140,47 @@ STORAGES = {
             "cloudinary_storage.storage.MediaCloudinaryStorage"
             if USE_CLOUDINARY
             else "django.core.files.storage.FileSystemStorage"
-        )
+        ),
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        # Avoid manifest rewriting that is failing on Django Admin CSS.
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# Compatibility setting required by django-cloudinary-storage's collectstatic
-# command when running with Django 5.2.
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Do not define STATICFILES_STORAGE separately.
+# Django 5.2 uses STORAGES for this configuration.
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------------------------------------------------------------------------
-# Security / proxy (Render terminates HTTPS in front of Django)
-# ---------------------------------------------------------------------------
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# --------------------------------------------------
+# SECURITY
+# --------------------------------------------------
+
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
+
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
-# Local frontend + deployed frontend URL(s), comma-separated in CORS_EXTRA_ORIGINS
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS"
+)
+
+# --------------------------------------------------
+# CORS
+# --------------------------------------------------
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ] + env_list("CORS_EXTRA_ORIGINS")
+
+# --------------------------------------------------
+# DJANGO REST FRAMEWORK
+# --------------------------------------------------
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -154,5 +189,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    "DEFAULT_THROTTLE_RATES": {"auth": "10/min"},
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": "10/min",
+    },
 }
